@@ -17,8 +17,9 @@ public class hexNode {
 
 public class HexBoardManager : MonoBehaviour {
 
-    // List of tile prefabs.
-    private TileList tileList;
+    // Components
+    private GameManager gameManager;
+    private TileList tileList; // List of tile prefabs.
 
     // Line Renderer for Pathfinding
     public LineRenderer pathLine;
@@ -29,7 +30,7 @@ public class HexBoardManager : MonoBehaviour {
     public bool debug = false;
 
     // My Hexagon Tile Board.
-    private HexBoard myBoard;
+    public HexBoard myBoard;
 
     float pathTime = 0f;
 
@@ -45,47 +46,42 @@ public class HexBoardManager : MonoBehaviour {
         new Point2(-1, 0), new Point2(1, 0),
         new Point2(0, 1), new Point2(1, 1) };
 
-    
+
+    string lastBoardSaved {
+        set { PlayerPrefs.SetString("lastBoardSaved", value); }
+        get { return PlayerPrefs.GetString("lastBoardSaved"); }
+    }
 
     void Awake() {
         tileList = GetComponent<TileList>();
+        gameManager = GetComponent<GameManager>();
     }
 
     /// <summary>
     /// Set up and generate the Board.
     /// </summary>
-    void Start() {/*
+    void Start() {
         float startemp = Time.realtimeSinceStartup;
-        myBoard = LoadBoard("myBoard");
-        if (myBoard == null) {
-            float temp = Time.realtimeSinceStartup;
-            myBoard = new HexBoard(100, 100, tileList);
-            myBoard.SetSizes(tileList.hexagon);
-            myBoard.BuildBoard();
-            Debug.Log("New Board Created in " + (Time.realtimeSinceStartup - temp) + "secs.");
-        } else {
-            myBoard.Initialize(tileList);
-        }
-        Debug.Log("Start() over, " + (Time.realtimeSinceStartup - startemp) + "secs.");*/
-    }
-
-
-    public bool loaded = false;
-    void Update() {
-        if (!loaded) {
-
-            float startemp = Time.realtimeSinceStartup;
-            myBoard = LoadBoard("myBoard");
+            if (lastBoardSaved != null && lastBoardSaved.Length > 0) myBoard = LoadBoard(lastBoardSaved);
             if (myBoard == null) {
                 newBoard(50, 50);
             } else {
                 myBoard.Initialize(tileList);
             }
             Debug.Log("Start() over, " + (Time.realtimeSinceStartup - startemp) + "secs.");
+    }
 
-            loaded = true;
-        }
 
+
+    void Update() {
+
+
+    }
+
+    public void LoadInitialize(string name) {
+        DestroyBoard();
+        myBoard = LoadBoard(name);
+        myBoard.Initialize(tileList);
     }
 
     public void newBoard(int x, int y) {
@@ -93,7 +89,7 @@ public class HexBoardManager : MonoBehaviour {
         myBoard = new HexBoard(x, y, tileList);
         myBoard.SetSizes(tileList.hexagon);
         myBoard.BuildBoard();
-        Debug.Log("New Board Created in " + (Time.realtimeSinceStartup - temp) + "secs.");
+        Debug.Log("New Board Created in " + (Time.realtimeSinceStartup - temp) + "secs. (" + x + ", " + y + ")");
     }
 
     public HexBoard LoadBoard(string boardName) {
@@ -104,7 +100,9 @@ public class HexBoardManager : MonoBehaviour {
         XmlSerializer serializer = new XmlSerializer(typeof(HexBoard));
         try {
             using (XmlReader reader = XmlReader.Create(Application.dataPath + "/data/" + boardName + ".xml")){
-                return (HexBoard) serializer.Deserialize(reader);
+                HexBoard temp = (HexBoard) serializer.Deserialize(reader);
+                gameManager.LoadInfo(temp.boardWidth, temp.boardHeight, boardName);
+                return temp;
             }
 
             // Old code for keepsies
@@ -133,6 +131,7 @@ public class HexBoardManager : MonoBehaviour {
         myLevelSave = new XmlDocument();
         myLevelSave.LoadXml(xml);
         myLevelSave.Save(Application.dataPath + "/data/" + boardName + ".xml");
+        lastBoardSaved = boardName;
     }
 
 
@@ -168,7 +167,7 @@ public class HexBoardManager : MonoBehaviour {
         myBoard.SetAllTiles(type);
     }
     public void DestroyBoard() {
-        myBoard.Destroy();
+        if(myBoard != null) myBoard.Destroy();
     }
     //-------------------------------------------------------------------------------------
     // PATHFINDING

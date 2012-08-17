@@ -2,17 +2,12 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System.IO;
 
-public enum GameState {
-    Game,
-    Editor
-}
+public enum GameState { Game, Editor }
 
-public enum PlayState {
-    Play,
-    Pause,
-    Edit
-}
+public enum PlayState { Play, Pause, Edit }
+
 /// <summary>
 /// Manage Game Behaviour 
 /// </summary>
@@ -21,37 +16,32 @@ public class GameManager : MonoBehaviour {
     // Components
     private HexBoardManager boardManager;
     private HexInput hexInput;
-
+    private TileList tileList;
 
     // Prefabs
     public GameObject characterPrefab; // for testing only, move to somewhere else
 
-
     // Set-up Variables
     public LayerMask layer;
-
 
     // GAME STATES
     GameState gameState;
     PlayState playState;
 
-
     // Tool States
     private int toolTile;
     private int toolObject;
 
-
-    private GameObject myCharacter; // for testing only, move to somewhere else
-
-
     // Internal Variables
     private bool editToolTip = true;
+    private GameObject myCharacter; 
+    private List<Rect> uiList; // UI list of Rects, for ignoring mouse clicks.
 
-    List<Rect> uiList; // UI list of Rects, for ignoring mouse clicks.
 
     void Awake() {
         boardManager = GetComponent<HexBoardManager>();
         hexInput = GetComponent<HexInput>();
+        tileList = GetComponent<TileList>();
     }
 
 
@@ -65,8 +55,19 @@ public class GameManager : MonoBehaviour {
     }
 
 
-    void Update() {
+    void Update() { }
 
+
+    /// <summary>
+    /// Recieve info about new board loads for gui.
+    /// </summary>
+    /// <param name="x">Board Width</param>
+    /// <param name="y">Board Height</param>
+    /// <param name="sn">Board Name</param>
+    public void LoadInfo(int x, int y, string sn) {
+        sizeX = x.ToString();
+        sizeY = y.ToString();
+        saveName = sn;
     }
 
 
@@ -115,6 +116,9 @@ public class GameManager : MonoBehaviour {
     }
 
 
+    /// <summary>
+    /// Build the GUI - Editor / Game / Sub-Menus
+    /// </summary>
     void OnGUI() {
         switch (gameState) {
             case GameState.Game:
@@ -143,19 +147,24 @@ public class GameManager : MonoBehaviour {
             // load board
         }*/
 
-        scrollPosition = GUI.BeginScrollView(new Rect(Screen.width / 2 - 75, Screen.height / 2 -50, 150, 100),
-        scrollPosition, new Rect(0, 0, 130, 200), false, true);
+        DirectoryInfo dir = new DirectoryInfo(Application.dataPath + "/data/");
+        FileInfo[] info = dir.GetFiles("*.xml");
+
+        scrollPosition = GUI.BeginScrollView(new Rect(Screen.width / 2 - 75, Screen.height / 2 -50, 150, 100), 
+            scrollPosition, new Rect(0, 0, 130, 200), false, true);
 
         // Make four buttons - one in each corner. The coordinate system is defined
         // by the last parameter to BeginScrollView.
-        GUI.Button(new Rect(0, 0, 130, 20), "Board 1");
-        GUI.Button(new Rect(0, 25, 130, 20), "Board 2");
-        GUI.Button(new Rect(0, 50, 130, 20), "Board 3");
-        GUI.Button(new Rect(0, 75, 130, 20), "Board 4");
-        GUI.Button(new Rect(0, 100, 130, 20), "Board 5");
-        GUI.Button(new Rect(0, 125, 130, 20), "Board 6");
-        GUI.Button(new Rect(0, 150, 130, 20), "Board 7");
-        GUI.Button(new Rect(0, 175, 130, 20), "Board 8");
+        
+        
+        int offset = 0;
+        foreach (FileInfo f in info) {
+            string tempName = f.Name.Substring(0, f.Name.Length - f.Extension.Length);
+            if (GUI.Button(new Rect(0, offset, 130, 22), tempName)) {
+                boardManager.LoadInitialize(tempName);
+            }
+            offset += 25;
+        }
 
         // End the scroll view that we began above.
         GUI.EndScrollView();
@@ -170,6 +179,7 @@ public class GameManager : MonoBehaviour {
         if (GUI.Button(new Rect(Screen.width / 2 - 5, Screen.height / 2 + 55, 80, 20), "New Board")) {
             boardManager.DestroyBoard();
             boardManager.newBoard(int.Parse(sizeX), int.Parse(sizeY));
+            saveName = "New_Board";
         }
 
         // Center Editor Tooltip Box
@@ -194,10 +204,10 @@ public class GameManager : MonoBehaviour {
 
 
 
-
+    string saveName = "myboard";
     void displayEditor() {
         // Right Side GUI Box 
-        Rect uiBox = new Rect(Screen.width - 125, 20, 110, 255);
+        Rect uiBox = new Rect(Screen.width - 125, 20, 110, 280);
         GUI.Box(uiBox, "");
         if (!uiList.Exists(x => x == uiBox)) uiList.Add(uiBox);
 
@@ -223,8 +233,12 @@ public class GameManager : MonoBehaviour {
         GUI.Label(new Rect(Screen.width - 120, 175, 100, 20), "Object");
         toolObject = GUI.Toolbar(new Rect(Screen.width - 120, 200, 100, 20), toolObject, new string[] { "0", "1", "2" });
 
-        if (GUI.Button(new Rect(Screen.width - 120, 250, 100, 20), "Save")) {
-            boardManager.SaveBoard("myBoard");
+
+        saveName = GUI.TextField(new Rect(Screen.width - 120, 245, 100, 22), saveName, 15);
+        saveName = Regex.Replace(saveName, @"[^a-zA-Z0-9_]", "");
+
+        if (GUI.Button(new Rect(Screen.width - 120, 275, 100, 20), "Save")) {
+            boardManager.SaveBoard(saveName);
         }
 
         // Show Editor Startup Tooltip
