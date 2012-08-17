@@ -163,6 +163,16 @@ public class HexBoardManager : MonoBehaviour {
         }
     }
 
+    public void SetTile(Point2 pos, HexTileType h) {
+        myBoard.GetTile(pos).Destroy();
+        myBoard.SetTile(pos, new HexTile(pos));
+        myBoard.GetTile(pos).SetTileType(h, myBoard.CalcHexPosition(pos), tileList);
+
+        GameObject particles = (GameObject)Instantiate(tileList.toggleEffect, myBoard.CalcHexPosition(pos) + (Vector3.up * 0.4f), Quaternion.identity);
+        particles.GetComponent<ParticleSystem>().Play();
+        Destroy(particles, 2);
+    }
+
     public void SetAllTiles(HexTileType type) {
         myBoard.SetAllTiles(type);
     }

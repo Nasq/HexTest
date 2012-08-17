@@ -81,7 +81,7 @@ public class GameManager : MonoBehaviour {
 
             if (Physics.Raycast(ray, out hit, 50, layer)) {
                 Debug.Log("Ray is Cast");
-                if (hit.transform.gameObject.tag == "hexagonFlat") {
+                if (hit.transform.gameObject.tag == "hexagon") {
                     Point2 tileGridPos = hit.transform.gameObject.GetComponent<TilePos>().arrayPos;
                     Debug.Log("Tile Found: getPath()");
                     boardManager.getPath(new Point2(0, 0), tileGridPos);
@@ -102,10 +102,10 @@ public class GameManager : MonoBehaviour {
 
             if (Physics.Raycast(ray, out hit, 50, layer)) {
                 Debug.Log("Ray is Cast");
-                if (hit.transform.gameObject.tag == "hexagonFlat" || hit.transform.gameObject.tag == "hexagonHill") {
+                if (hit.transform.gameObject.tag == "hexagon") {
                     Point2 tileGridPos = hit.transform.gameObject.GetComponent<TilePos>().arrayPos;
                     Debug.Log("Tile Found: toggleTile()");
-                    boardManager.ToggleTile(tileGridPos);
+                    boardManager.SetTile(tileGridPos, (HexTileType)(toolTile+1));
                 }
             } else { Debug.Log("Right Click: No Hit!"); }
         }
@@ -130,7 +130,10 @@ public class GameManager : MonoBehaviour {
         }
 
         GUI.Label(new Rect(25, 200, 100, 20), "UI Count: " + uiList.Count);
+        GUI.Label(new Rect(25, 225, 100, 20), "toolTile: " + toolTile);
+        GUI.Label(new Rect(25, 250, 100, 20), "toolObject: " + toolObject);
     }
+
 
     Vector2 scrollPosition = Vector2.zero;
     string sizeX = "50";

@@ -154,6 +154,9 @@ public class HexTile {
             case HexTileType.Flat:
                 SetTileObject(tileList.hexagonFlat, objectPos, true);
                 break;
+            case HexTileType.FlatSand:
+                SetTileObject(tileList.hexagonFlatSand, objectPos, true);
+                break;
             case HexTileType.Hill:
                 SetTileObject(tileList.hexagonHill, objectPos, false);
                 break;
@@ -180,5 +183,6 @@ public class HexTile {
 public enum HexTileType {
     Empty = 0,
     Flat = 1,
-    Hill = 2
+    Hill = 2,
+    FlatSand = 3
 }
