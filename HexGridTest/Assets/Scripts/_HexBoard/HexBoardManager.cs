@@ -77,11 +77,7 @@ public class HexBoardManager : MonoBehaviour {
             float startemp = Time.realtimeSinceStartup;
             myBoard = LoadBoard("myBoard");
             if (myBoard == null) {
-                float temp = Time.realtimeSinceStartup;
-                myBoard = new HexBoard(40, 40, tileList);
-                myBoard.SetSizes(tileList.hexagon);
-                myBoard.BuildBoard();
-                Debug.Log("New Board Created in " + (Time.realtimeSinceStartup - temp) + "secs.");
+                newBoard(50, 50);
             } else {
                 myBoard.Initialize(tileList);
             }
@@ -90,6 +86,14 @@ public class HexBoardManager : MonoBehaviour {
             loaded = true;
         }
 
+    }
+
+    public void newBoard(int x, int y) {
+        float temp = Time.realtimeSinceStartup;
+        myBoard = new HexBoard(x, y, tileList);
+        myBoard.SetSizes(tileList.hexagon);
+        myBoard.BuildBoard();
+        Debug.Log("New Board Created in " + (Time.realtimeSinceStartup - temp) + "secs.");
     }
 
     public HexBoard LoadBoard(string boardName) {
@@ -146,7 +150,7 @@ public class HexBoardManager : MonoBehaviour {
             //toggleEffect.Play();
 
             GameObject particles = (GameObject)Instantiate(tileList.toggleEffect, myBoard.CalcHexPosition(pos) + (Vector3.up * 0.4f), Quaternion.identity);
-            //particles.GetComponent<ParticleSystem>().Play();
+            particles.GetComponent<ParticleSystem>().Play();
             Destroy(particles, 2);
         } else {
             //Switch to Flat
@@ -155,7 +159,7 @@ public class HexBoardManager : MonoBehaviour {
             myBoard.GetTile(pos).SetTileType(HexTileType.Flat, myBoard.CalcHexPosition(pos), tileList);
 
             GameObject particles = (GameObject)Instantiate(tileList.toggleEffect, myBoard.CalcHexPosition(pos) + (Vector3.up * 0.4f), Quaternion.identity);
-            //particles.GetComponent<ParticleSystem>().Play();
+            particles.GetComponent<ParticleSystem>().Play();
             Destroy(particles, 2);
         }
     }
@@ -163,7 +167,9 @@ public class HexBoardManager : MonoBehaviour {
     public void SetAllTiles(HexTileType type) {
         myBoard.SetAllTiles(type);
     }
-    
+    public void DestroyBoard() {
+        myBoard.Destroy();
+    }
     //-------------------------------------------------------------------------------------
     // PATHFINDING
     //-------------------------------------------------------------------------------------
@@ -478,10 +484,10 @@ public class HexBoardManager : MonoBehaviour {
 
         if (debug) {
             // Debug Info
-            GUI.Label(new Rect(20, 25, 1000, 20), "Mouse: " + Input.mousePosition.ToString());
-            GUI.Label(new Rect(20, 50, 100, 20), "Path: " + thePath.Count);
-            GUI.Label(new Rect(20, 75, 1000, 20), "Time: " + pathTime + " ");
-            GUI.Label(new Rect(20, 100, 1000, 20), "File: " + Application.dataPath);
+            GUI.Label(new Rect(20, 25, 1000, 20), "MousePos: " + Input.mousePosition.ToString());
+            GUI.Label(new Rect(20, 50, 100, 20), "PathFind: " + thePath.Count);
+            GUI.Label(new Rect(20, 75, 1000, 20), "PathTime: " + pathTime + " ");
+            GUI.Label(new Rect(20, 100, 1000, 20), "AppDataPath: " + Application.dataPath);
         }
 
     }

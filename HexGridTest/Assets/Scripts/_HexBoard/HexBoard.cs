@@ -122,6 +122,12 @@ public class HexBoard{
             }
         }
     }
+
+    public void Destroy() {
+        foreach(HexTile t in tiles){
+            t.Destroy();
+        }
+    }
 }
 
 
